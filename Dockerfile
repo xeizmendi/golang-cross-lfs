@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.16
+ARG GO_VERSION=1.16.3
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX10.15.sdk
@@ -9,7 +9,7 @@ ARG OSX_SDK_SUM=42829ecf867af21de530ceba255d4c01e468f35607715d9e5f63a1f8fa5f6a03
 ARG OSX_VERSION_MIN=10.12
 ARG OSX_CROSS_COMMIT=2733413b6847c1489d6230f062d3293e6f42a021
 
-FROM golang:${GO_VERSION}-buster AS base
+FROM debian:buster AS base
 
 ARG APT_MIRROR
 RUN sed -ri "s/(httpredir|deb).debian.org/${APT_MIRROR:-deb.debian.org}/g" /etc/apt/sources.list \
@@ -26,7 +26,7 @@ RUN echo "${OSX_SDK_SUM}"  "${OSX_CROSS_PATH}/tarballs/${OSX_SDK}.tar.xz" | sha2
 FROM base AS osx-cross-base
 ARG DEBIAN_FRONTEND=noninteractive
 # Install deps
-RUN set -x; echo "Starting image build for Debian Stretch" \
+RUN set -x; echo "Starting image build for Debian Buster" \
  && dpkg --add-architecture arm64                      \
  && dpkg --add-architecture armel                      \
  && dpkg --add-architecture armhf                      \
@@ -74,9 +74,6 @@ RUN set -x; echo "Starting image build for Debian Stretch" \
  &&	apt -y autoremove \
  &&	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# FIXME: install gcc-multilib
-# FIXME: add mips and powerpc architectures
-
 FROM osx-cross-base AS osx-cross
 ARG OSX_CROSS_COMMIT
 WORKDIR "${OSX_CROSS_PATH}"
@@ -88,20 +85,17 @@ COPY --from=osx-sdk "${OSX_CROSS_PATH}/." "${OSX_CROSS_PATH}/"
 ARG OSX_VERSION_MIN
 RUN UNATTENDED=yes OSX_VERSION_MIN=${OSX_VERSION_MIN} ./build.sh
 
+FROM golang:${GO_VERSION}-buster AS go-base
+
 FROM osx-cross-base AS final
 ARG DEBIAN_FRONTEND=noninteractive
 
 COPY --from=osx-cross "${OSX_CROSS_PATH}/." "${OSX_CROSS_PATH}/"
 ENV PATH=${OSX_CROSS_PATH}/target/bin:$PATH
-
-ARG GOLANG_VERSION=1.16
-ARG GOLANG_DIST_SHA=013a489ebb3e24ef3d915abe5b94c3286c070dfe0818d5bca8108f1d6e8440d2
-
-# update golang
-RUN \
-	GOLANG_DIST=https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
-	wget -O go.tgz "$GOLANG_DIST"; \
-	echo "${GOLANG_DIST_SHA} *go.tgz" | sha256sum -c -; \
-	rm -rf /usr/local/go; \
-	tar -C /usr/local -xzf go.tgz; \
-	rm go.tgz
+ENV PATH /usr/local/go/bin:$PATH
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:$PATH
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR $GOPATH
+ENV GOLANG_VERSION ${GO_VERSION}
+COPY --from=go-base /usr/local/go /usr/local/go

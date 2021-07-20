@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.16.3
+ARG GO_VERSION=1.16.4
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX10.15.sdk
@@ -96,6 +96,8 @@ ENV PATH /usr/local/go/bin:$PATH
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+ENV HOME /go
+ENV XDG_CACHE_HOME /go/.cache
 WORKDIR $GOPATH
 ENV GOLANG_VERSION ${GO_VERSION}
 COPY --from=go-base /usr/local/go /usr/local/go

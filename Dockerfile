@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.17.6
+ARG GO_VERSION=1.18.5
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX10.15.sdk
@@ -9,7 +9,7 @@ ARG OSX_SDK_SUM=42829ecf867af21de530ceba255d4c01e468f35607715d9e5f63a1f8fa5f6a03
 ARG OSX_VERSION_MIN=10.12
 ARG OSX_CROSS_COMMIT=2733413b6847c1489d6230f062d3293e6f42a021
 
-FROM debian:buster AS base
+FROM debian:bullseye AS base
 
 ARG APT_MIRROR
 RUN sed -ri "s/(httpredir|deb).debian.org/${APT_MIRROR:-deb.debian.org}/g" /etc/apt/sources.list \
@@ -85,7 +85,7 @@ COPY --from=osx-sdk "${OSX_CROSS_PATH}/." "${OSX_CROSS_PATH}/"
 ARG OSX_VERSION_MIN
 RUN UNATTENDED=yes OSX_VERSION_MIN=${OSX_VERSION_MIN} ./build.sh
 
-FROM golang:${GO_VERSION}-buster AS go-base
+FROM golang:${GO_VERSION}-bullseye AS go-base
 
 FROM osx-cross-base AS final
 ARG DEBIAN_FRONTEND=noninteractive

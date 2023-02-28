@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.19.3
+ARG GO_VERSION=1.20.1
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX13.0.sdk
@@ -26,7 +26,7 @@ RUN echo "${OSX_SDK_SUM}"  "${OSX_CROSS_PATH}/tarballs/${OSX_SDK}.tar.xz" | sha2
 FROM base AS osx-cross-base
 ARG DEBIAN_FRONTEND=noninteractive
 # Install deps
-RUN set -x; echo "Starting image build for Debian Buster" \
+RUN set -x; echo "Starting image build for Debian Bullseye" \
  && dpkg --add-architecture arm64                      \
  && dpkg --add-architecture armel                      \
  && dpkg --add-architecture armhf                      \
@@ -36,6 +36,17 @@ RUN set -x; echo "Starting image build for Debian Buster" \
  && dpkg --add-architecture powerpc                    \
  && dpkg --add-architecture ppc64el                    \
  && apt-get update                                     \
+ && apt-get install -y -q                              \
+        curl                                           \
+        ca-certificates                                \
+ && mkdir -pm755 /etc/apt/keyrings                     \
+ && curl -s -o /etc/apt/keyrings/winehq-archive.key    \
+        https://dl.winehq.org/wine-builds/winehq.key   \
+ && curl -s -o /etc/apt/sources.list.d/winehq-bullseye.sources \
+        https://dl.winehq.org/wine-builds/debian/dists/bullseye/winehq-bullseye.sources \
+ && apt-get update                                     \
+ && apt-get install -y -q --install-recommends         \
+        winehq-stable                                  \
  && apt-get install -y -q                              \
         autoconf                                       \
         automake                                       \
@@ -51,7 +62,6 @@ RUN set -x; echo "Starting image build for Debian Buster" \
         crossbuild-essential-armhf                     \
         crossbuild-essential-mipsel                    \
         crossbuild-essential-ppc64el                   \
-        curl                                           \
         devscripts                                     \
         gdb                                            \
         git-core                                       \

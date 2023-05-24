@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.20.1
+ARG GO_VERSION=1.20.2
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX13.0.sdk
@@ -111,3 +111,5 @@ ENV XDG_CACHE_HOME /go/.cache
 WORKDIR $GOPATH
 ENV GOLANG_VERSION ${GO_VERSION}
 COPY --from=go-base /usr/local/go /usr/local/go
+RUN groupadd -g 1001 testgroup \
+ && useradd -u 1000 -U -G testgroup -d /home/testuser -m -s /bin/sh testuser

@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.20.2
+ARG GO_VERSION=1.20.4
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX13.0.sdk

@@ -1,5 +1,5 @@
 # golang parameters
-ARG GO_VERSION=1.20.4
+ARG GO_VERSION=1.20.8
 
 # OS-X SDK parameters
 ARG OSX_SDK=MacOSX13.0.sdk
@@ -9,11 +9,8 @@ ARG OSX_SDK_SUM=614e6cd5443c1c8329c018e3a94f69cf6d6ef8a0d32e1f1531ca6e4dfb39b0e8
 ARG OSX_VERSION_MIN=10.13
 ARG OSX_CROSS_COMMIT=50e86ebca7d14372febd0af8cd098705049161b9
 
-FROM debian:bullseye AS base
+FROM debian:bookworm AS base
 
-ARG APT_MIRROR
-RUN sed -ri "s/(httpredir|deb).debian.org/${APT_MIRROR:-deb.debian.org}/g" /etc/apt/sources.list \
- && sed -ri "s/(security).debian.org/${APT_MIRROR:-security.debian.org}/g" /etc/apt/sources.list
 ENV OSX_CROSS_PATH=/osxcross
 
 FROM base AS osx-sdk
